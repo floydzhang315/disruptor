@@ -13,7 +13,7 @@
 
 [DiamondPath1P3CPerfTest](http://code.google.com/p/disruptor/source/browse/trunk/code/src/perf/com/lmax/disruptor/DiamondPath1P3CPerfTest.java)​ 展示了一个并不罕见的结构——独立的一个生产者和三个消费者。最棘手的一点是：第三个消费者必须等待前两个消费者处理完成后，才能开始工作。
 
-![](images\8-1.png)
+![](images/8-1.png)
 
 消费者 C3 也许是你的业务逻辑。消费者 C1 可能在备份接收到的数据，而消费者 C2 可能在准备数据或者别的东西。
 
@@ -21,7 +21,7 @@
 
 在一个 [SEDA-风格的架构](http://www.theserverside.com/news/1363672/Building-a-Scalable-Enterprise-Applications-Using-Asynchronous-IO-and-SEDA-Model)​中，每个处理阶段都会用队列分开：
 
-![](images\8-2.png)
+![](images/8-2.png)
 
 （为什么单词 Queue 里必须有这么多 “e” 呢？这是我在画这些图时遇到的最麻烦的词）。
 
@@ -31,7 +31,7 @@
 
 在 Disruptor​ 的世界里，一切都由一个单独的 Ring Buffer 管理：
 
-![](images\8-3.png)
+![](images/8-3.png)
 
 这张图看起来更复杂。不过所有的参与者都只依赖 Ring Buffer 作为一个单独的联结点，而且所有的交互都是基于 Barrier 对象与检查依赖的目标序号来实现的。
 
@@ -43,13 +43,13 @@
 
 Hmmm。我想需要一个例子。
 
-![](images\8-4.png)
+![](images/8-4.png)
 
 我们从这个故事发生到一半的时候来看：生产者 P1 已经在 Ring Buffer 里写到序号 22 了，消费者 C1 已经访问和处理完了序号 21 之前的所有数据。消费者 C2 处理到了序号 18。消费者 C3，就是依赖其他消费者的那个，才处理到序号 15。
 
 生产者 P1 不能继续向 RingBuffer 写入数据了，因为序号 15 占据了我们想要写入序号 23 的数据节点 (Slot)。
 
-![](images\8-5.png)
+![](images/8-5.png)
 
 （抱歉，我真的试过用其他颜色来代替红色和绿色，但是别的都更容易混淆。）
 
@@ -63,7 +63,7 @@ Hmmm。我想需要一个例子。
 
 秘密在于把处理结果写入 Ring Buffer 数据节点 (Entry) 本身。这样，当 C3 消费者从 Ring Buffer 取出节点时，它已经填充好了 C3 消费者工作需要的所有信息。这里 真正 重要的地方是节点 (Entry) 对象的每一个字段应该只允许一个消费者写入。这可以避免产生并发写入冲突 (write-contention) 减慢了整个处理过程。
 
-![](images\8-6.png)
+![](images/8-6.png)
 
 你可以在 [DiamondPath1P3CPerfTest​](http://code.google.com/p/disruptor/source/browse/trunk/code/src/perf/com/lmax/disruptor/DiamondPath1P3CPerfTest.java) 里看到这个例子—— [FizzBuzzEntry​](http://code.google.com/p/disruptor/source/browse/trunk/code/src/perf/com/lmax/disruptor/support/FizzBuzzEntry.java) 有两个字段：fizz 和 buzz。如果消费者是 Fizz Consumer, 它只写入字段 fizz。如果是 Buzz Consumer, 它只写入字段 buzz。第三个消费者 FizzBuzz，它只去读这两个字段但是不会做写入，因为读没问题，不会引起争用。
 
