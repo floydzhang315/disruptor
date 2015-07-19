@@ -9,14 +9,14 @@ Disruptor 是线程内通信框架，用于线程里共享数据。LMAX 创建Di
 基于 Mechanical Sympathy（对于计算机底层硬件的理解），基本的计算机科学以及领域驱动设计，Disruptor 已经发展成为一个帮助开发人员解决很多繁琐并发编程问题的框架。
 很多架构都普遍使用一个队列共享线程间的数据（即传送消息）。图1 展示了一个在不同的阶段中通过使用队列来传送消息的例子（每个蓝色的圈代表一个线程）。
 
-![](images\12-1.png)
+![](images/12-1.png)
 图 1
 
 这种架构允许生产者线程（图1中的 stage 1）在 stage2 很忙以至于无法立刻处理的时候能够继续执行下一步操作，从而提供了解决系统中数据拥堵的方法。这里队列可以看成是不同线程之间的缓冲。
 
 在这种最简单的情况下，Disruptor 可以用来代替队列作为在不同的线程传递消息的工具（如图 2 所示）。
 
-![](images\12-2.png)
+![](images/12-2.png)
 
 图2
 
@@ -32,7 +32,7 @@ Disruptor 通过使用 RingBuffer 以及每个事件处理器（EventProcessor�
 
 向 RingBuffer 写入数据需要通过两阶段提交（two-phase commit）。首先，Stage 1线程即发布者必须确定 RingBuffer 中下一个可以插入的格,如图 3 所示。
 
-![](images\12-3.png)
+![](images/12-3.png)
 
 图 3
 
@@ -42,7 +42,7 @@ RingBuffer 通过检查所有事件处理器正在从 RingBuffe 中读取的当�
 
 图4显示发现了下一个插入格。
 
-![](images\12-4.png)
+![](images/12-4.png)
 
 图 4
 
@@ -52,7 +52,7 @@ RingBuffer 通过检查所有事件处理器正在从 RingBuffe 中读取的当�
 
 图5表示对象的改动保存进了 RingBuffer。
 
-![](images\12-5.png)
+![](images/12-5.png)
 
 图5
 
@@ -66,7 +66,7 @@ Disruptor 框架中包含了可以从 RingBuffer 中读取数据的BatchEventPro
 
 图5显示事件处理器等待下一个序号。
 
-![](images\12-6.png)
+![](images/12-6.png)
 
 图6
 
@@ -74,7 +74,7 @@ Disruptor 框架中包含了可以从 RingBuffer 中读取数据的BatchEventPro
 
 如图 6 中 Stage2 所示，事件处理器的最大序号是 16.它向 SequenceBarrier 调用 waitFor（17）以获得 17 格中的数据。因为没有数据写入 RingBuffer，Stage2 事件处理器挂起等待下一个序号。如果这样，没有什么可以处理。但是，如图6所示的情况，RingBuffer 已经被填充到 18 格，所以 waitFor 函数将返回18并通知事件处理器，它可以读取包括直到 18 格在内的数据，如图7所示。
 
-![](images\12-7.png)
+![](images/12-7.png)
 
 图7
 
@@ -96,7 +96,7 @@ Disruptor 在设计上遵守 single-writer 原则从而实现零竞争，即每�
 
 Disruptor 系统的最初设计是为了支持需要按照特定的顺序发生的阶段性类似流水线事件，这种需求在企业应用系统开发中并不少见。图 8 显示了标准的 3 级流水线。
 
-![](images\12-8.png)
+![](images/12-8.png)
 
 图 8
 
@@ -104,7 +104,7 @@ Disruptor 系统的最初设计是为了支持需要按照特定的顺序发生�
 
 按顺序执行上次操作是一个合乎逻辑的方法，但是并不是最有效的方法。日志和复制操作可以同步执行，因为他们互相独立。但是业务逻辑必须在他们都执行完后才能执行。图9显示他们可以并行互不依赖。
 
-![](images\12-9.png)
+![](images/12-9.png)
 
 图 9
 
@@ -114,7 +114,7 @@ Disruptor 系统的最初设计是为了支持需要按照特定的顺序发生�
 
 当每个事件处理器都使用 SequenceBarrier 来确定哪些事件可以安全的从 RingBuffer 中读出，那么就从中读出这些事件。
 
-![](images\12-10.png)
+![](images/12-10.png)
 
 图10
 
