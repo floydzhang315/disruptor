@@ -9,7 +9,7 @@
 
 ##ConsumerBarrier 与消费者
 这里我要稍微反过来介绍，因为总的来说读取数据这一过程比写数据要容易理解。假设通过一些“魔法”已经把数据写入到 Ring Buffer了，怎样从 Ring Buffer 读出这些数据呢？
-![](images\6-1.png)
+![](images/6-1.png)
 (好，我开始后悔使用 Paint/Gimp 了。尽管这是个购买绘图板的好借口，如果我继续写下去的话… UML 界的权威们大概也在诅咒我的名字了。)
 
 消费者(Consumer)是一个想从 Ring Buffer 里读取数据的线程，它可以访问 ConsumerBarrie r对象——这个对象由 RingBuffer 创建并且代表消费者与 RingBuffer 进行交互。就像 Ring Buffe r显然需要一个序号才能找到下一个可用节点一样，消费者也需要知道它将要处理的序号——每个消费者都需要找到下一个它要访问的序号。在上面的例子中，消费者处理完了 Ring Buffer 里序号8之前（包括 8）的所有数据，那么它期待访问的下一个序号是 9。
@@ -26,7 +26,7 @@ ConsumerBarrier 返回 RingBuffer 的最大可访问序号——在上面的例�
 ##接下来怎么做？
 接下来，消费者会一直原地停留，等待更多数据被写入Ring Buffer。并且，一旦数据写入后消费者会收到通知——节点 9，10，11和12 已写入。现在序号 12 到了，消费者可以让 ConsumerBarrier 去拿这些序号节点里的数据了。
 
-![](images\6-2.png)
+![](images/6-2.png)
 
 拿到了数据后，消费者(Consumer)会更新自己的标识(cursor)。
 
