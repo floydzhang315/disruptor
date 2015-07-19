@@ -27,7 +27,7 @@
 
 ring buffer维护两个指针，“next”和“cursor”。
 
-![](images\9-1.jpg)
+![](images/9-1.jpg)
 
 在上面的图示里，是一个 size 为 7 的 ring buffer（你应该知道这个手工绘制的图示的原理），从 0-2 的坐标位置是填充了数据的。
 
@@ -41,11 +41,11 @@ Disruptor API 提供了事务操作的支持。当从 ring buffe r获取到区�
 
 指向了位置 4，然后返回 3。这样，线程 D 就获得了位置3的操作权限。
 
-![](images\9-2.jpg)
+![](images/9-2.jpg)
 
 接着，另一个线程E做类似以上的操作。
 
-![](images\9-3.jpg)
+![](images/9-3.jpg)
 
 ##提交写入
 
@@ -61,11 +61,11 @@ Disruptor API 提供了事务操作的支持。当从 ring buffe r获取到区�
 
 这是一个关键点。知道 ring buffer 填充了多少 – 即写了多少数据，那一个序列数写入最高等等，是游标的一些简单的功能。“next”指针是为了保证写入的事务特性。
 
-![](images\9-4.jpg)
+![](images/9-4.jpg)
 
 最后的疑惑是线程E的写入可见，线程E一直重试，尝试将“cursor”从 3 更新成 4，经过线程D操作后已经更新成 3，那么下一次重试就可以成功了。
 
-![](images\9-5.jpg)
+![](images/9-5.jpg)
 
 总结
 
