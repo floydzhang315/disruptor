@@ -19,7 +19,7 @@
 
 在后台，由 ProducerBarrier 负责所有的交互细节来从 Ring Buffer 中找到下一个节点，然后才允许生产者向它写入数据。
 
-![](images\7-1.png)
+![](images/7-1.png)
 
 （我不确定[闪闪发亮的新手写板​](http://www.amazon.com/Wacom-CTL460-Bamboo-Pen-Tablet/dp/B002OOWC3I?ie=UTF8&tag=trissramb-20&link_code=btl&camp=213689&creative=392969)能否有助于提高我画图片的清晰度，但是它用起来很有意思）。
 在这幅图中，我们假设只有一个生产者写入 Ring Buffer。过一会儿我们再处理多个生产者的复杂问题。
@@ -34,7 +34,7 @@
 
 现在可以想像消费者 2 已经处理完了一批节点，并且向前移动了它的序号。可能它挪到了序号 9（因为消费端的批处理方式，现实中我会预计它到达 12，但那样的话这个例子就不够有趣了）。
 
-![](images\7-2.png)
+![](images/7-2.png)
 
 上图显示了当消费者 2 挪动到序号 9 时发生的情况。在这张图中我已经忽略了 ConsumerBarrier，因为它没有参与这个场景。
 ProducerBarier 会看到下一个节点——序号 3 那个已经可以用了。它会抢占这个节点上的 Entry（我还没有特别介绍 Entry 对象，基本上它是一个放写入到某个序号的 Ring Buffer 数据的桶），把下一个序号（13）更新成 Entry 的序号，然后把 Entry 返回给生产者。生产者可以接着往 Entry 里写入数据。
@@ -56,7 +56,7 @@ ProducerBarrier 先等待 Ring Buffer 的游标追上当前的位置（对于单
 
 有趣的是 Disruptor 可以同时在生产者和 消费者​ 两端实现批处理。还记得伴随着程序运行，消费者 2 最后达到了序号 9 吗？ProducerBarrier 可以在这里做一件很狡猾的事－它知道 Ring Buffer 的大小，也知道最慢的消费者位置。因此它能够发现当前有哪些节点是可用的。
 
-![](images\7-3.png)
+![](images/7-4.png)
 
 如果 ProducerBarrier 知道 Ring Buffer 的游标指向 12，而最慢的消费者在 9 的位置，它就可以让生产者写入节点 3，4，5，6，7 和 8，中间不需要再次检查消费者的位置。
 
@@ -68,7 +68,7 @@ ProducerBarrier 先等待 Ring Buffer 的游标追上当前的位置（对于单
 
 在多个生产者的场景下，你还需要其他东西来追踪序号。这个序号是指当前可写入的序号。注意这和“向 Ring Buffer 的游标加 1”不一样－如果你有一个以上的生产者同时在向 Ring Buffer 写入，就有可能出现某些 Entry 正在被生产者写入但还没有提交的情况。
 
-![](images\7-5.png)
+![](images/7-5.png)
 
 让我们复习一下如何申请写入节点。每个生产者都向 ClaimStrategy 申请下一个可用的节点。生产者 1 拿到序号 13，这和上面单个生产者的情况一样。生产者 2 拿到序号 14，尽管 Ring Buffer的当前游标仅仅指向 12。这是因为 ClaimSequence 不但负责分发序号，而且负责跟踪哪些序号已经被分配。
 
@@ -76,13 +76,13 @@ ProducerBarrier 先等待 Ring Buffer 的游标追上当前的位置（对于单
 
 我把生产者 1 和它的写入节点涂上绿色，把生产者 2 和它的写入节点涂上可疑的粉色－看起来像紫色。
 
-![](images\7-6.png)
+![](images/7-6.png)
 
 现在假设生产者 1 还生活在童话里，因为某些原因没有来得及提交数据。生产者 2 已经准备好提交了，并且向 ProducerBarrier 发出了请求。
 
 就像我们先前在 commit 示意图中看到的一样，ProducerBarrier 只有在 Ring Buffer 游标到达准备提交的节点的前一个节点时它才会提交。在当前情况下，游标必须先到达序号 13 我们才能提交节点 14 的数据。但是我们不能这样做，因为生产者 1 正盯着一些闪闪发光的东西，还没来得及提交。因此 ClaimStrategy 就停在那儿自旋 (spins)， 直到 Ring Buffer 游标到达它应该在的位置。
 
-![](images\7-7.png)
+![](images/7-7.png)
 
 现在生产者 1 从迷糊中清醒过来并且申请提交节点 13 的数据（生产者 1 发出的绿色箭头代表这个请求）。ProducerBarrier 让 ClaimStrategy 先等待 Ring Buffer 的游标到达序号 12，当然现在已经到了。因此 Ring Buffer 移动游标到 13，让 ProducerBarrier 戳一下 WaitStrategy 告诉所有人都知道 Ring Buffer 有更新了。现在 ProducerBarrier 可以完成生产者 2 的请求，让 Ring Buffer 移动游标到 14，并且通知所有人都知道。
 
