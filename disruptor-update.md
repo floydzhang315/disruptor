@@ -8,7 +8,7 @@
 
 
 在旧的版本中：
-![](images\11-1.png)
+![](images/11-1.png)
 
 
 这是一个 Disruptor 的配置示例，具体上来说就是一个菱形的结构。如果你对此毫无感觉，可以回过头复习下 [disruptor 的细节](http://mechanitis.blogspot.com/search/label/disruptor)。
@@ -20,7 +20,7 @@
 将 Disruptor Wizard 加入了主代码库。
 新版本：
 
-![](images\11-2.png)
+![](images/11-2.png)
 
 你可以看到基本原理还是类似的。新版本更加简单，因为 ProducerBarrier 本身不再作为一个单独的实体存在，它的替代者是 PublishPort 接口，且 RingBuffer 自身就实现了这个接口。 类似地，DependencyBarrier 替代 ConsumerBarrier ，厘清了此对象的职责。另外，Publisher (Producer的替代者)和 EventProcessor(替代了Consumer)也更能精确地体现出它们的行为。Consumer 这个名字总是会带来一些混淆，因为因为其实消费者从来不从 ring buffer 消费任何东西。Consumer 之前仅仅是用于队列实现的一个术语。
 
