@@ -22,7 +22,7 @@
 
 编译器和 CPU 可以在保证输出结果一样的情况下对指令重排序，使性能得到优化。插入一个内存屏障，相当于告诉 CPU 和编译器先于这个命令的必须先执行，后于这个命令的必须后执行。正如去拉斯维加斯旅途中各个站点的先后顺序在你心中都一清二楚。
 
- ![](4-1.png)
+ ![](images/4-1.png)
 
 内存屏障另一个作用是强制更新一次不同 CPU 的缓存。例如，一个写屏障会把这个屏障前写入的数据刷新到缓存，这样任何试图读取该数据的线程将得到最新值，而不用考虑到底是被哪个 cpu 核心或者哪颗 CPU 执行的。
 
@@ -32,7 +32,7 @@
 
 这里有个神奇咒语叫 volatile (我觉得这个词在 Java 规范中从未被解释清楚)。如果你的字段是 volatile，Java 内存模型将在写操作后插入一个写屏障指令，在读操作前插入一个读屏障指令。
 
- ![](images\4-2.png)
+ ![](images/4-2.png)
  
 
 这意味着如果你对一个 volatile 字段进行写操作，你必须知道：
@@ -47,7 +47,7 @@
 
 RingBuffe r的指针(cursor)（译注：指向队尾元素）属于一个神奇的volatile 变量，同时也是我们能够不用锁操作就能实现 Disruptor 的原因之一。
 
- ![](images\4-3.png)
+ ![](images/4-3.png)
 
 生产者将会取得下一个 [Entry](http://code.google.com/p/disruptor/source/browse/trunk/code/src/main/com/lmax/disruptor/AbstractEntry.java?spec=svn109&r=201)（或者是一批）,并可对它（们）作任意改动， 把它（们）更新为任何想要的值。[如你所知](http://ifeve.com/dissecting-the-disruptor-writing-to-the-ring-buffer/)，在所有改动都完成后，生产者对 ring buffer 调用 commit 方法来更新序列号（译注:把 cursor 更新为该 Entry 的序列号）。对 volatile 字段(cursor)的写操作创建了一个内存屏障，这个屏障将刷新所有缓存里的值（或者至少相应地使得缓存失效）。
 
@@ -57,7 +57,7 @@ RingBuffe r的指针(cursor)（译注：指向队尾元素）属于一个神奇�
 
 消费者中的序列号是 volatile 类型的，会被若干个外部对象读取——其他的下游消费者可能在跟踪这个消费者。[ProducerBarrier](http://code.google.com/p/disruptor/source/browse/trunk/code/src/main/com/lmax/disruptor/ProducerBarrier.java?spec=svn109&r=201)/[RingBuffer](http://code.google.com/p/disruptor/source/browse/trunk/code/src/main/com/lmax/disruptor/RingBuffer.java?spec=svn109&r=242)(取决于你看的是旧的还是新的代码)跟踪它以确保环没有出现重叠（wrap）的情况（译注：为了防止下游的消费者和上游的消费者对同一个 Entry 竞争消费，导致在环形队列中互相覆盖数据，下游消费者要对上游消费者的消费情况进行跟踪）。
 
-![](images\4-4.png)
+![](images/4-4.png)
 
 所以，如果你的下游消费者(C2)看见前一个消费者(C1)在消费号码为 12 的 Entry，当 C2 的读取也到了 12，它在更新序列号前将可以获得 C1 对该 Entry 的所作的更新。
 
