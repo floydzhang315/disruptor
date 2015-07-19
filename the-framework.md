@@ -9,7 +9,7 @@ Disruptor 是一个用于在线程间通信的高效低延时的消息组件，�
 
 虽然 disruptor 模式使用起来很简单，但是建立多个消费者以及它们之间的依赖关系需要的样板代码太多了。为了能快速又简单适用于 99 %的场景，我为 Disruptor 模式准备了一个[简单的领域特定语言](https://github.com/ajsutton/disruptorWizard)。例如，为建立一个消费者的“四边形模式”：
 
-![](images\10-1.png)
+![](images/10-1.png)
 
 （从 [Trisha Gee’s excellent series explaining the disruptor pattern](http://mechanitis.blogspot.com/2011/07/dissecting-disruptor-wiring-up.html) 偷来的图片）
 
@@ -51,7 +51,7 @@ ProducerBarrier producerBarrier = dw.createProducerBarrier();
 
 我们甚至可以在一个更复杂的六边形模式中构建一个并行消费者链：
 
-![](images\10-2.png)
+![](images/10-2.png)
 
 
 ```
